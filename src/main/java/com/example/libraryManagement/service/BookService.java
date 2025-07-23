@@ -7,6 +7,7 @@ import com.example.libraryManagement.model.BookResponse;
 import com.example.libraryManagement.model.JsonResponse;
 import com.example.libraryManagement.repository.BookRepository;
 import com.example.libraryManagement.util.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import static com.example.libraryManagement.Constants.OBJECT_MAPPER;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class BookService {
 
@@ -31,10 +33,6 @@ public class BookService {
     private BookRepository bookRepository;
     @Autowired
     private NotificationService notificationService;
-
-    public BookService(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
 
     public ResponseEntity<JsonResponse> addNewBook(BookRequest bookRequest) {
 
@@ -102,7 +100,8 @@ public class BookService {
             book.setAvailabilityStatus(bookRequest.getAvailabilityStatus());
         if (bookRequest.getAuthor() != null && !bookRequest.getAuthor().isBlank())
             book.setAuthor(bookRequest.getAuthor());
-        if (bookRequest.getIsbn() != null && !bookRequest.getIsbn().isBlank()) book.setIsbn(bookRequest.getIsbn());
+        if (bookRequest.getIsbn() != null && !bookRequest.getIsbn().isBlank())
+            book.setIsbn(bookRequest.getIsbn());
 
         int year = bookRequest.getPublishedYear();
         if (year >= 1500 && year <= Year.now().getValue()) book.setPublishedYear(bookRequest.getPublishedYear());

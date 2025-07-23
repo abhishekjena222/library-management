@@ -6,12 +6,14 @@ import com.example.libraryManagement.repository.BookRepository;
 import com.example.libraryManagement.repository.UserRepository;
 import com.example.libraryManagement.repository.WishlistRepository;
 import com.example.libraryManagement.util.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class WishlistService {
 
@@ -24,7 +26,7 @@ public class WishlistService {
 
     public ResponseEntity<JsonResponse> addToWishlist(long userId, long bookId) {
 
-        if (!bookRepository.existsById(bookId)) {
+        if (!bookRepository.existsById(bookId) || bookRepository.findByIdAndIsDeletedTrue(bookId).isPresent()) {
             log.error("Book not available with ID: " + bookId);
             return ResponseUtil.badRequest("Book not available with ID: " + bookId);
 
@@ -35,7 +37,8 @@ public class WishlistService {
             return ResponseUtil.badRequest("User not available with ID: " + userId);
         }
 
-        if (wishlistRepository.findByUser_IdAndBook_Id(userId, bookId).isEmpty()) {
+        log.info("{}",wishlistRepository.findByUser_IdAndBook_Id(userId, bookId).isPresent());
+        if (wishlistRepository.findByUser_IdAndBook_Id(userId, bookId).isPresent()) {
             log.error("Already added in wishlist");
             return ResponseUtil.badRequest("Already added in wishlist");
         }

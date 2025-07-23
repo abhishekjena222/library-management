@@ -21,7 +21,6 @@ public class WishlistController {
 
     @PostMapping("/{userId}/{bookId}")
     public ResponseEntity<JsonResponse> addWishlist(@PathVariable long userId, @PathVariable long bookId){
-        log.info(" {} {}",userId,bookId);
         return wishlistService.addToWishlist(userId,bookId);
     }
 

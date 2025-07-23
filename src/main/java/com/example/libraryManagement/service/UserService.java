@@ -6,6 +6,7 @@ import com.example.libraryManagement.model.UserRequest;
 import com.example.libraryManagement.repository.UserRepository;
 import com.example.libraryManagement.repository.WishlistRepository;
 import com.example.libraryManagement.util.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,10 @@ import java.util.Optional;
 
 import static com.example.libraryManagement.Constants.OBJECT_MAPPER;
 
-@Service
+
 @Slf4j
+@RequiredArgsConstructor
+@Service
 public class UserService {
 
     @Autowired
@@ -24,11 +27,6 @@ public class UserService {
 
     @Autowired
     private WishlistRepository wishlistRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
 
     public ResponseEntity<JsonResponse> addUser(UserRequest userRequest) {
         String validateError = validationUser(userRequest);
@@ -60,7 +58,7 @@ public class UserService {
 
         if (!userRepository.existsById(id)){
             log.info("User not found or deleted");
-            ResponseUtil.badRequest("User not found");
+            return ResponseUtil.badRequest("User not found");
         }
 
         User user = userRepository.findById(id).get();
