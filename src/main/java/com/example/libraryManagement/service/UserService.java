@@ -4,6 +4,7 @@ import com.example.libraryManagement.entity.User;
 import com.example.libraryManagement.model.JsonResponse;
 import com.example.libraryManagement.model.UserRequest;
 import com.example.libraryManagement.repository.UserRepository;
+import com.example.libraryManagement.repository.WishlistRepository;
 import com.example.libraryManagement.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WishlistRepository wishlistRepository;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -50,5 +54,23 @@ public class UserService {
 
         return optionalUser.map(user -> ResponseUtil.success(OBJECT_MAPPER.valueToTree(user))).orElseGet(() -> ResponseUtil.badRequest("User not available..."));
 
+    }
+
+    public ResponseEntity<JsonResponse> deleteUserDetails(long id) {
+
+        if (!userRepository.existsById(id)){
+            log.info("User not found or deleted");
+            ResponseUtil.badRequest("User not found");
+        }
+
+        User user = userRepository.findById(id).get();
+
+        wishlistRepository.deleteByUser(user);
+        log.info("wishlist cleared for user : {}",user.getEmail());
+
+        userRepository.deleteById(id);
+        log.info("User Details removed...");
+
+        return ResponseUtil.success("data_msg","User removed successfully...");
     }
 }

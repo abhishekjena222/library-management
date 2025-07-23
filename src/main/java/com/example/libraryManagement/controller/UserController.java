@@ -24,6 +24,11 @@ public class UserController {
         return userService.getUserDetails(id);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<JsonResponse> deleteUser(@PathVariable long id){
+        return userService.deleteUserDetails(id);
+    }
+
 
 
 

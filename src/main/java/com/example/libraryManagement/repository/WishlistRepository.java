@@ -1,6 +1,7 @@
 package com.example.libraryManagement.repository;
 
 import com.example.libraryManagement.entity.Book;
+import com.example.libraryManagement.entity.User;
 import com.example.libraryManagement.entity.WishList;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface WishlistRepository extends JpaRepository<WishList, Long> {
     List<WishList> findAllByBook(Book book);
 
     Optional<WishList> findByUser_IdAndBook_Id(long id, Long id1);
+
+    long deleteByUser(User user);
 }
