@@ -34,6 +34,9 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private AvailabilityStatus availabilityStatus;
 
+    @JsonProperty("book_borrowed_by ")
+    private String bookBorrowedBy;
+
 
     private boolean isDeleted = false;
 

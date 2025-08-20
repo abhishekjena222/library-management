@@ -6,6 +6,7 @@ import com.example.libraryManagement.service.BookService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +46,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<JsonResponse> updateBookDetails(@PathVariable long id, @RequestBody BookRequest bookRequest) {
+    public ResponseEntity<JsonResponse> updateBookDetails(@PathVariable long id, @RequestBody BookRequest bookRequest) throws InterruptedException {
         log.info("id: {}; request: {}", id, bookRequest);
         return bookService.updateBook(id, bookRequest);
     }
@@ -60,5 +61,9 @@ public class BookController {
         return bookService.searchBook(query);
     }
 
+    @PostMapping("/borrow/{userId}/{bookId}")
+    public ResponseEntity<JsonResponse> borrowBook(@PathVariable long userId, @PathVariable long bookId){
+        return bookService.borrowBook(userId, bookId);
+    }
 
 }

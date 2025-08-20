@@ -1,11 +1,14 @@
 package com.example.libraryManagement.service;
 
 import com.example.libraryManagement.entity.Book;
+import com.example.libraryManagement.entity.User;
 import com.example.libraryManagement.model.AvailabilityStatus;
 import com.example.libraryManagement.model.BookRequest;
 import com.example.libraryManagement.model.BookResponse;
 import com.example.libraryManagement.model.JsonResponse;
 import com.example.libraryManagement.repository.BookRepository;
+import com.example.libraryManagement.repository.UserRepository;
+import com.example.libraryManagement.repository.WishlistRepository;
 import com.example.libraryManagement.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Year;
 import java.util.List;
@@ -33,6 +37,12 @@ public class BookService {
     private BookRepository bookRepository;
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private WishlistRepository wishlistRepository;
 
     public ResponseEntity<JsonResponse> addNewBook(BookRequest bookRequest) {
 
@@ -84,7 +94,7 @@ public class BookService {
         return null;
     }
 
-    public ResponseEntity<JsonResponse> updateBook(long id, BookRequest bookRequest) {
+    public ResponseEntity<JsonResponse> updateBook(long id, BookRequest bookRequest) throws InterruptedException {
         Optional<Book> optionalBook = bookRepository.findById(id);
 
         if (optionalBook.isEmpty() || optionalBook.get().isDeleted()) {
@@ -110,6 +120,7 @@ public class BookService {
 
         if (oldAvailabilityStatus == AvailabilityStatus.BORROWED && newAvailabilityStatus == AvailabilityStatus.AVAILABLE) {
             notificationService.sendAvailabilityNotification(book);
+            log.info("--send notification--");
         }
         return ResponseUtil.created(OBJECT_MAPPER.valueToTree(book));
     }
@@ -147,5 +158,46 @@ public class BookService {
             return ResponseUtil.badRequest("data_msg", "no book found with query : " + query);
         }
         return ResponseUtil.success(OBJECT_MAPPER.valueToTree(bookList));
+    }
+
+    @Transactional
+    public ResponseEntity<JsonResponse> borrowBook(long userId, long bookId) {
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            log.error("User not found with Id: {}",userId);
+            return ResponseUtil.badRequest("data_msg", "User not found with Id: "+userId);
+        }
+
+        Optional<Book> optionalBook = bookRepository.findById(bookId);
+        if (optionalBook.isEmpty() || optionalBook.get().isDeleted()) {
+            log.error("Book not found with Id: {}",bookId);
+            return ResponseUtil.badRequest("data_msg", "Book not found with ID: "+bookId);
+        }
+
+        Book book = optionalBook.get();
+        User user = optionalUser.get();
+
+        if (book.getAvailabilityStatus().equals(AvailabilityStatus.BORROWED)){
+            log.info("{} book not available yet...",book.getTitle());
+            return ResponseUtil.success("data_msg","book not available yet");
+        }
+
+
+        try {
+            book.setBookBorrowedBy(user.getName());
+            book.setAvailabilityStatus(AvailabilityStatus.BORROWED);
+
+            bookRepository.save(book);
+            wishlistRepository.deleteByUserAndBook(user, book);
+
+            log.info("borrowed for user : {}",user.getName());
+            return ResponseUtil.success("data_msg", "book borrowed...");
+
+        } catch (Exception e) {
+            log.error("Exception acceded {}",e.getMessage(),e);
+            return ResponseUtil.badRequest(e.getMessage());
+        }
+
     }
 }

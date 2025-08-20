@@ -26,4 +26,8 @@ public interface WishlistRepository extends JpaRepository<WishList, Long> {
     @Query("delete from WishList w where w.user = ?1")
     void deleteByUser(User user);
 
+    @Transactional
+    @Modifying
+    @Query("delete from WishList w where w.user = ?1 and w.book = ?2")
+    int deleteByUserAndBook(User user, Book book);
 }
